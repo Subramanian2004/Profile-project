@@ -43,7 +43,7 @@ const ProfileHeader = ({ profile, isEditing, onEditToggle, onThemeToggle }) => {
             transition={{ type: "spring", stiffness: 300 }}
           >
             <img 
-              src={profile.profilePicture} 
+              src={profile.profile_picture} 
               alt={profile.name}
               className="profile-image"
             />

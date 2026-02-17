@@ -176,6 +176,7 @@ export const updateProfile = async (req, res) => {
     if (req.body.title !== undefined) updateData.title = req.body.title;
     if (req.body.bio !== undefined) updateData.bio = req.body.bio;
     if (req.body.profilePicture !== undefined) updateData.profile_picture = req.body.profilePicture;
+    if (req.body.profile_picture !== undefined) updateData.profile_picture = req.body.profile_picture;
     if (req.body.location !== undefined) updateData.location = req.body.location;
     if (req.body.phone !== undefined) updateData.phone = req.body.phone;
     if (req.body.website !== undefined) updateData.website = req.body.website;

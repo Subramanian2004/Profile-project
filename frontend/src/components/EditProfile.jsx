@@ -12,7 +12,7 @@ const EditProfile = ({ profile, onSave, onCancel }) => {
     location: profile.location || '',
     phone: profile.phone || '',
     website: profile.website || '',
-    profilePicture: profile.profilePicture || '',
+    profile_picture: profile.profile_picture || profile.profilePicture || '',
     availability: profile.availability || 'Open to Opportunities',
   });
 
@@ -97,14 +97,14 @@ const EditProfile = ({ profile, onSave, onCancel }) => {
             <label>Profile Picture URL</label>
             <input
               type="url"
-              name="profilePicture"
-              value={formData.profilePicture}
+              name="profile_picture"
+              value={formData.profile_picture}
               onChange={handleChange}
               placeholder="/WhatsApp Image 2026-02-10 at 5.12.53 AM.jpeg"
             />
-            {formData.profilePicture && (
+            {formData.profile_picture && (
               <div className="image-preview">
-                <img src={formData.profilePicture} alt="Preview" />
+                <img src={formData.profile_picture} alt="Preview" />
               </div>
             )}
           </div>
