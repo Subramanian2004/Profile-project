@@ -3,6 +3,8 @@ import { Sparkles, Copy, Check, RefreshCw, Wand2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './AIBioGenerator.css';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 const AIBioGenerator = ({ profile, onBioUpdate }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedBio, setGeneratedBio] = useState('');
@@ -17,80 +19,34 @@ const AIBioGenerator = ({ profile, onBioUpdate }) => {
     { value: 'technical',    label: 'Technical'    },
   ];
 
-  const buildPrompt = () => {
-    const skillNames  = profile.skills?.map(s => s.name).join(', ')         || 'various skills';
-    const interests   = profile.interests?.join(', ')                         || 'technology';
-    const achievements= profile.achievements?.slice(0, 3).join(', ')         || '';
-    const experience  = profile.workExperience?.length > 0
-      ? `${profile.workExperience.length} work experience(s) including ${profile.workExperience[0]?.title} at ${profile.workExperience[0]?.company}`
-      : 'diverse work experience';
-
-    return `Generate a ${tone} bio for a developer profile with these details:
-Name: ${profile.name}
-Title: ${profile.title}
-Skills: ${skillNames}
-Interests: ${interests}
-${achievements ? `Achievements: ${achievements}` : ''}
-Experience: ${experience}
-Location: ${profile.location || 'Not specified'}
-
-Requirements:
-- Write in first person
-- Keep it between 60-100 words
-- Tone must be ${tone}
-- Highlight key skills naturally
-- Make it sound authentic and human
-- Do NOT use bullet points
-- Do NOT include any preamble or explanation, just the bio itself`;
-  };
-
   const generateBio = async () => {
     setIsGenerating(true);
     setError('');
     setGeneratedBio('');
 
     try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      // ✅ Calls YOUR backend — no CORS issues!
+      const response = await fetch(`${API_URL}/profiles/generate-bio`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 300,
-          messages: [{ role: 'user', content: buildPrompt() }],
-        }),
+        body: JSON.stringify({ profile, tone }),
       });
+
+      if (!response.ok) throw new Error(`Server error: ${response.status}`);
 
       const data = await response.json();
 
-      if (data?.content?.[0]?.text) {
-        setGeneratedBio(data.content[0].text.trim());
+      if (data?.bio) {
+        setGeneratedBio(data.bio);
       } else {
-        throw new Error('No response from AI');
+        throw new Error('No bio returned');
       }
     } catch (err) {
-      // Fallback: generate a smart bio from profile data without API
-      setGeneratedBio(generateFallbackBio());
+      console.error('Bio generation error:', err);
+      setError('Something went wrong. Please try again.');
     } finally {
       setIsGenerating(false);
     }
-  };
-
-  // Smart fallback bio if API fails
-  const generateFallbackBio = () => {
-    const skills     = profile.skills?.slice(0, 3).map(s => s.name).join(', ') || 'modern technologies';
-    const topSkill   = profile.skills?.[0]?.name || 'software development';
-    const location   = profile.location ? `Based in ${profile.location}, ` : '';
-    const experience = profile.workExperience?.[0];
-    const role       = experience ? `${experience.title} at ${experience.company}` : profile.title;
-
-    const bios = {
-      professional: `${location}I am a ${profile.title} specialising in ${skills}. As ${role}, I bring a strong foundation in building scalable, user-focused solutions. Passionate about clean code and continuous learning, I thrive on turning complex challenges into elegant software.`,
-      creative:     `Code is my canvas and ${topSkill} is my brush. ${location}I craft digital experiences as ${profile.title}, weaving together ${skills} to build products people love. Every line of code is an opportunity to solve a real problem beautifully.`,
-      casual:       `Hey! I'm a ${profile.title} who loves building things with ${skills}. ${location}I spend my days writing code, solving interesting problems, and constantly picking up new skills. Always open to exciting projects and collaborations!`,
-      technical:    `${profile.title} with hands-on expertise in ${skills}. ${location}Currently working as ${role}, focusing on performance, scalability, and maintainable architecture. Committed to engineering best practices and delivering high-quality software solutions.`,
-    };
-
-    return bios[tone] || bios.professional;
   };
 
   const handleCopy = () => {
@@ -131,7 +87,7 @@ Requirements:
         </div>
       </div>
 
-      {/* Profile Tags Used */}
+      {/* Profile Tags */}
       <div className="profile-tags">
         <span className="tags-label">Using your:</span>
         <div className="tags-list">
@@ -199,7 +155,6 @@ Requirements:
         )}
       </AnimatePresence>
 
-      {/* Error */}
       {error && (
         <div className="ai-error">
           <p>{error}</p>
