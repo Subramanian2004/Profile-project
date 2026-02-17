@@ -7,6 +7,7 @@ import SkillsSection from './components/SkillsSection';
 import WorkExperience from './components/WorkExperience';
 import { SocialLinks, Achievements, Interests } from './components/AdditionalSections';
 import EditProfile from './components/EditProfile';
+import AIBioGenerator from './components/AIBioGenerator';
 import './App.css';
 
 function App() {
@@ -99,6 +100,16 @@ function App() {
     }
   };
 
+  const handleBioUpdate = async (newBio) => {
+  try {
+    const response = await profileAPI.updateProfile(profile._id, { bio: newBio });
+    setProfile(response.data);
+    toast.success('Bio updated successfully!');
+  } catch (err) {
+    toast.error('Failed to update bio');
+  }
+};
+
   if (loading) {
     return (
       <div className="loading-container">
@@ -165,6 +176,11 @@ function App() {
         ) : (
           <>
             <AboutSection bio={profile.bio} />
+
+             <AIBioGenerator 
+              profile={profile} 
+              onBioUpdate={handleBioUpdate} 
+            />
             
             <SkillsSection 
               skills={profile.skills}
